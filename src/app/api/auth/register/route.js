@@ -1,10 +1,7 @@
-import { connectDB } from "@/lib/db";
-import User from "@/models/User";
-import { registerSchema } from "@/validators/auth.js";
-import { registerUser } from "@/services/authService.js";
+import { verifySignupOtpSchema } from "@/validators/auth.js";
+import { completeSignupWithOtp } from "@/services/authService.js";
 import { setAuthCookies } from "@/lib/auth/cookies.js";
-import { AppError, jsonError } from "@/lib/errors.js";
-import { ROLES } from "@/constants/roles";
+import { jsonError, ErrorCodes } from "@/lib/errors.js";
 import { getAuthRateLimit, getClientIp } from "@/lib/rate-limit.js";
 
 export async function POST(request) {
@@ -17,29 +14,12 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const parsed = registerSchema.safeParse(body);
+    const parsed = verifySignupOtpSchema.safeParse(body);
     if (!parsed.success) {
       return Response.json({ error: parsed.error.flatten() }, { status: 400 });
     }
 
-    await connectDB();
-    const count = await User.countDocuments();
-    let role = parsed.data.role ?? ROLES.CLIENT;
-    if (role !== ROLES.CLIENT) {
-      const bootstrap = request.headers.get("x-admin-bootstrap-secret");
-      const allow =
-        count === 0 ||
-        (process.env.ADMIN_BOOTSTRAP_SECRET &&
-          bootstrap === process.env.ADMIN_BOOTSTRAP_SECRET);
-      if (!allow) {
-        throw new AppError("Cannot register this role without authorization", 403);
-      }
-    }
-
-    const { user, access, refresh } = await registerUser({
-      ...parsed.data,
-      role,
-    });
+    const { user, access, refresh } = await completeSignupWithOtp(parsed.data);
 
     await setAuthCookies(access, refresh);
 

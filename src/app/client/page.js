@@ -2,25 +2,32 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { apiJson } from "@/lib/fetcher.js";
 
 export default function ClientHome() {
   const [sub, setSub] = useState(null);
   const [banner, setBanner] = useState("");
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
-    fetch("/api/client/subscription", { credentials: "include" })
-      .then((r) => r.json())
+    apiJson("/api/client/subscription")
       .then((d) => {
         setSub(d);
         if (d.status === "expired") setBanner("Your subscription has expired.");
         else if (d.status === "expiring_soon")
           setBanner(`Your subscription expires in ${d.remainingDays} day(s).`);
-      });
+      })
+      .catch(() => setLoadError("Could not load subscription."));
   }, []);
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">Welcome</h1>
+      {loadError ? (
+        <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-900 dark:border-red-800 dark:bg-red-950 dark:text-red-100">
+          {loadError}
+        </div>
+      ) : null}
       {banner ? (
         <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100">
           {banner}

@@ -10,7 +10,7 @@ import {
 import User from "@/models/User";
 import { connectDB } from "@/lib/db";
 import { ROLES } from "@/constants/roles";
-import { AppError } from "@/lib/errors.js";
+import { AppError, ErrorCodes } from "@/lib/errors.js";
 
 export async function getAccessTokenFromCookies() {
   const store = await cookies();
@@ -55,14 +55,14 @@ export async function getAuthFromRequest(request) {
 
 export async function requireAuth(request, allowedRoles) {
   const auth = await getAuthFromRequest(request);
-  if (!auth) throw new AppError("Unauthorized", 401);
+  if (!auth) throw new AppError("Unauthorized", 401, ErrorCodes.UNAUTHORIZED);
   if (allowedRoles && !allowedRoles.includes(auth.role)) {
-    throw new AppError("Forbidden", 403);
+    throw new AppError("Forbidden", 403, ErrorCodes.FORBIDDEN);
   }
   await connectDB();
   const user = await User.findById(auth.userId).lean();
-  if (!user || !user.isActive) throw new AppError("Unauthorized", 401);
-  if (user.refreshTokenVersion !== auth.rv) throw new AppError("Unauthorized", 401);
+  if (!user || !user.isActive) throw new AppError("Unauthorized", 401, ErrorCodes.UNAUTHORIZED);
+  if (user.refreshTokenVersion !== auth.rv) throw new AppError("Unauthorized", 401, ErrorCodes.UNAUTHORIZED);
   return { ...auth, user };
 }
 

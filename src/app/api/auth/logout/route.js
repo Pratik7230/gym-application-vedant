@@ -12,7 +12,8 @@ export async function POST(request) {
     }
     await clearAuthCookies();
     return Response.json({ ok: true });
-  } catch {
+  } catch (e) {
+    console.error("[logout]", e);
     await clearAuthCookies();
     return Response.json({ ok: true });
   }

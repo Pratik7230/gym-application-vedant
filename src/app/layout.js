@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Gym Management",
-  description: "Manage members, subscriptions, and workouts",
+  title: "Iron Fitness — Gym Management",
+  description: "Members, subscriptions, trainers, workouts, and attendance in one place",
 };
 
 export default function RootLayout({ children }) {
