@@ -1,7 +1,7 @@
 import { loginSchema } from "@/validators/auth.js";
 import { loginUser } from "@/services/authService.js";
 import { setAuthCookies } from "@/lib/auth/cookies.js";
-import { jsonError } from "@/lib/errors.js";
+import { jsonError, ErrorCodes } from "@/lib/errors.js";
 import { getAuthRateLimit, getClientIp } from "@/lib/rate-limit.js";
 
 export async function POST(request) {
@@ -12,7 +12,7 @@ export async function POST(request) {
     const email = body?.email ?? "";
     const { success } = await rl.limit(`login:${ip}:${email}`);
     if (!success) {
-      return Response.json({ error: "Too many requests" }, { status: 429 });
+      return Response.json({ error: "Too many requests", code: ErrorCodes.RATE_LIMITED }, { status: 429 });
     }
 
     const parsed = loginSchema.safeParse(body);

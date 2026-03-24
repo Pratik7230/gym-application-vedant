@@ -22,8 +22,13 @@ export async function sendMail({ to, subject, text, html }) {
     return { skipped: true };
   }
   const from = process.env.EMAIL_FROM || "Gym App <noreply@localhost>";
-  await transport.sendMail({ from, to, subject, text, html: html ?? text });
-  return { sent: true };
+  try {
+    await transport.sendMail({ from, to, subject, text, html: html ?? text });
+    return { sent: true };
+  } catch (err) {
+    console.error("[email] send failed", { to, subject, err: err?.message || err });
+    throw err;
+  }
 }
 
 export async function sendSubscriptionReminderEmail({ to, name, endDate, daysLeft }) {

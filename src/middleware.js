@@ -29,6 +29,11 @@ export async function middleware(request) {
   const loginUrl = new URL("/login", request.url);
 
   if (!process.env.JWT_ACCESS_SECRET) {
+    if (process.env.NODE_ENV === "production") {
+      loginUrl.searchParams.set("error", "server_config");
+      return NextResponse.redirect(loginUrl);
+    }
+    console.warn("[middleware] JWT_ACCESS_SECRET is not set; protected routes are not secured in development.");
     return NextResponse.next();
   }
 

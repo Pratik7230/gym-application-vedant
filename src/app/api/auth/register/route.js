@@ -3,7 +3,7 @@ import User from "@/models/User";
 import { registerSchema } from "@/validators/auth.js";
 import { registerUser } from "@/services/authService.js";
 import { setAuthCookies } from "@/lib/auth/cookies.js";
-import { AppError, jsonError } from "@/lib/errors.js";
+import { AppError, jsonError, ErrorCodes } from "@/lib/errors.js";
 import { ROLES } from "@/constants/roles";
 import { getAuthRateLimit, getClientIp } from "@/lib/rate-limit.js";
 
@@ -32,7 +32,7 @@ export async function POST(request) {
         (process.env.ADMIN_BOOTSTRAP_SECRET &&
           bootstrap === process.env.ADMIN_BOOTSTRAP_SECRET);
       if (!allow) {
-        throw new AppError("Cannot register this role without authorization", 403);
+        throw new AppError("Cannot register this role without authorization", 403, ErrorCodes.FORBIDDEN);
       }
     }
 

@@ -4,7 +4,7 @@ import { requireAuth } from "@/lib/auth/session.js";
 import { ROLES } from "@/constants/roles.js";
 import { adminUpdateUserSchema } from "@/validators/admin.js";
 import { logActivity } from "@/services/activityLogService.js";
-import { jsonError, AppError } from "@/lib/errors.js";
+import { jsonError, AppError, ErrorCodes } from "@/lib/errors.js";
 
 export async function GET(request, { params }) {
   try {
@@ -12,7 +12,7 @@ export async function GET(request, { params }) {
     await connectDB();
     const id = (await params).id;
     const u = await User.findById(id).select("-passwordHash").populate("trainer", "name email").lean();
-    if (!u) throw new AppError("Not found", 404);
+    if (!u) throw new AppError("Not found", 404, ErrorCodes.NOT_FOUND);
     return Response.json({ user: u });
   } catch (e) {
     return jsonError(e);
@@ -31,7 +31,7 @@ export async function PATCH(request, { params }) {
 
     await connectDB();
     const u = await User.findById(id);
-    if (!u) throw new AppError("Not found", 404);
+    if (!u) throw new AppError("Not found", 404, ErrorCodes.NOT_FOUND);
 
     const data = parsed.data;
     if (data.name !== undefined) u.name = data.name;
@@ -46,6 +46,10 @@ export async function PATCH(request, { params }) {
       } else {
         u.trainer = null;
       }
+    }
+
+    if (data.role !== undefined && data.role !== ROLES.CLIENT) {
+      u.trainer = null;
     }
 
     await u.save();
@@ -80,7 +84,7 @@ export async function DELETE(request, { params }) {
     const id = (await params).id;
     await connectDB();
     const u = await User.findById(id);
-    if (!u) throw new AppError("Not found", 404);
+    if (!u) throw new AppError("Not found", 404, ErrorCodes.NOT_FOUND);
     if (u._id.equals(actor._id)) throw new AppError("Cannot deactivate yourself", 400);
     u.isActive = false;
     await u.save();

@@ -9,11 +9,11 @@ import { getApiRateLimit, getClientIp } from "@/lib/rate-limit.js";
 
 export async function GET(request) {
   try {
+    await requireAuth(request, [ROLES.ADMIN]);
     const rl = getApiRateLimit();
     const { success } = await rl.limit(`api:${getClientIp(request)}`);
     if (!success) return Response.json({ error: "Too many requests" }, { status: 429 });
 
-    await requireAuth(request, [ROLES.ADMIN]);
     await connectDB();
     const { searchParams } = new URL(request.url);
     const active = searchParams.get("active");

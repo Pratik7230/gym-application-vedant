@@ -2,6 +2,7 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
 let ratelimitAuth;
+let ratelimitRefresh;
 let ratelimitApi;
 
 function getRedis() {
@@ -26,6 +27,24 @@ export function getAuthRateLimit() {
     };
   }
   return ratelimitAuth;
+}
+
+/** Token refresh: allow bursts from multiple tabs without being too strict */
+export function getTokenRefreshRateLimit() {
+  if (ratelimitRefresh) return ratelimitRefresh;
+  const redis = getRedis();
+  if (redis) {
+    ratelimitRefresh = new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(120, "15 m"),
+      prefix: "gym:refresh",
+    });
+  } else {
+    ratelimitRefresh = {
+      limit: async () => ({ success: true, remaining: 999 }),
+    };
+  }
+  return ratelimitRefresh;
 }
 
 export function getApiRateLimit() {
