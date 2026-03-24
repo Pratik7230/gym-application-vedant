@@ -9,25 +9,51 @@ export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState("");
   const [bootstrap, setBootstrap] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function onSubmit(e) {
+  async function onRequestOtp(e) {
     e.preventDefault();
+    setMessage("");
     setError("");
     setLoading(true);
     try {
       const headers = { "Content-Type": "application/json" };
       if (bootstrap) headers["x-admin-bootstrap-secret"] = bootstrap;
-      const res = await fetch("/api/auth/register", {
+      const res = await fetch("/api/auth/register/request-otp", {
         method: "POST",
-        credentials: "include",
         headers,
         body: JSON.stringify({ name, email, password }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Signup failed");
+      if (!res.ok) throw new Error(data.error || "Failed to send OTP");
+      setOtpSent(true);
+      setMessage("OTP sent to your email. Enter it below to complete signup.");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function onVerifyOtp(e) {
+    e.preventDefault();
+    setMessage("");
+    setError("");
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "OTP verification failed");
       router.replace("/client");
       router.refresh();
     } catch (err) {
@@ -55,13 +81,14 @@ export default function SignupPage() {
         <div className="p-6 sm:p-10">
           <h1 className="text-3xl font-bold">Create Account</h1>
           <p className="mt-2 text-sm text-zinc-400">Default role is member (client).</p>
-          <form onSubmit={onSubmit} className="mt-8 space-y-5">
+          <form onSubmit={otpSent ? onVerifyOtp : onRequestOtp} className="mt-8 space-y-5">
             <div>
               <label className="block text-sm font-medium text-zinc-300">Name</label>
               <input
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                disabled={otpSent}
                 className="mt-2 w-full rounded-xl border border-[#45ffca]/40 bg-black/40 px-4 py-3 text-sm text-white outline-none transition focus:border-[#45ffca] focus:shadow-[0_0_12px_rgba(69,255,202,0.4)]"
                 placeholder="Your full name"
               />
@@ -73,6 +100,7 @@ export default function SignupPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={otpSent}
                 className="mt-2 w-full rounded-xl border border-[#45ffca]/40 bg-black/40 px-4 py-3 text-sm text-white outline-none transition focus:border-[#45ffca] focus:shadow-[0_0_12px_rgba(69,255,202,0.4)]"
                 placeholder="you@example.com"
               />
@@ -85,10 +113,26 @@ export default function SignupPage() {
                 minLength={8}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={otpSent}
                 className="mt-2 w-full rounded-xl border border-[#45ffca]/40 bg-black/40 px-4 py-3 text-sm text-white outline-none transition focus:border-[#45ffca] focus:shadow-[0_0_12px_rgba(69,255,202,0.4)]"
                 placeholder="At least 8 characters"
               />
             </div>
+            {otpSent ? (
+              <div>
+                <label className="block text-sm font-medium text-zinc-300">OTP</label>
+                <input
+                  required
+                  inputMode="numeric"
+                  pattern="[0-9]{6}"
+                  maxLength={6}
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                  className="mt-2 w-full rounded-xl border border-[#45ffca]/40 bg-black/40 px-4 py-3 text-sm text-white outline-none transition focus:border-[#45ffca] focus:shadow-[0_0_12px_rgba(69,255,202,0.4)]"
+                  placeholder="6-digit code"
+                />
+              </div>
+            ) : null}
             <div>
               <label className="block text-sm font-medium text-zinc-300">
                 Bootstrap secret (admin/trainer only)
@@ -98,17 +142,33 @@ export default function SignupPage() {
                 value={bootstrap}
                 onChange={(e) => setBootstrap(e.target.value)}
                 placeholder="Optional"
+                disabled={otpSent}
                 className="mt-2 w-full rounded-xl border border-[#45ffca]/40 bg-black/40 px-4 py-3 text-sm text-white outline-none transition focus:border-[#45ffca] focus:shadow-[0_0_12px_rgba(69,255,202,0.4)]"
               />
             </div>
+            {message ? <p className="text-sm text-emerald-300">{message}</p> : null}
             {error ? <p className="text-sm text-red-400">{error}</p> : null}
             <button
               type="submit"
               disabled={loading}
               className="w-full rounded-xl border border-[#45ffca] bg-[#45ffca] py-3 text-sm font-semibold text-black transition hover:shadow-[0_0_18px_rgba(69,255,202,0.6)] disabled:opacity-60"
             >
-              {loading ? "Creating..." : "Sign up"}
+              {loading ? "Please wait..." : otpSent ? "Verify OTP & Sign up" : "Send OTP"}
             </button>
+            {otpSent ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setOtpSent(false);
+                  setOtp("");
+                  setMessage("");
+                  setError("");
+                }}
+                className="w-full rounded-xl border border-zinc-700 bg-zinc-900 py-3 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500"
+              >
+                Edit details
+              </button>
+            ) : null}
           </form>
           <p className="mt-6 text-center text-sm text-zinc-400">
             Have an account?{" "}

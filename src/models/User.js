@@ -16,6 +16,9 @@ const userSchema = new mongoose.Schema(
     trainer: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
     isActive: { type: Boolean, default: true },
     refreshTokenVersion: { type: Number, default: 0 },
+    passwordResetOtpHash: { type: String, default: null },
+    passwordResetOtpExpiresAt: { type: Date, default: null },
+    passwordResetOtpAttempts: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
