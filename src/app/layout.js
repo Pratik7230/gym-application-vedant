@@ -1,16 +1,19 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Bebas_Neue, Manrope } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider.jsx";
 import { SessionRefresh } from "@/components/session-refresh.jsx";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const bebasNeue = Bebas_Neue({
+  variable: "--font-bebas",
+  weight: "400",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata = {
@@ -20,8 +23,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full`} suppressHydrationWarning>
-      <body className="min-h-full antialiased">
+    <html lang="en" className={`${manrope.variable} ${bebasNeue.variable} h-full`} suppressHydrationWarning>
+      <body className="min-h-full bg-slate-100 text-slate-900 antialiased dark:bg-[#02070f] dark:text-slate-100">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <SessionRefresh />
           {children}

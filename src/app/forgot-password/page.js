@@ -3,6 +3,15 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { AuthShell } from "@/components/auth-shell.jsx";
+
+const labelClass = "block text-xs font-semibold uppercase tracking-[0.16em] text-slate-300";
+const inputClass =
+  "mt-2 w-full rounded-2xl border border-white/20 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none transition focus:border-cyan-300 focus:bg-white/10 disabled:opacity-70";
+const primaryButtonClass =
+  "w-full rounded-2xl border border-cyan-300/70 bg-cyan-300 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-200 disabled:opacity-60";
+const secondaryButtonClass =
+  "w-full rounded-2xl border border-white/25 bg-white/5 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-slate-100 transition hover:bg-white/10";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -62,104 +71,91 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black px-4 py-10 text-white">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(69,255,202,0.18),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(69,255,202,0.12),transparent_30%)]" />
-      <div className="relative grid w-full max-w-5xl overflow-hidden rounded-3xl border border-[#45ffca]/40 bg-[#111]/95 shadow-[0_0_40px_rgba(69,255,202,0.2)] md:grid-cols-2">
-        <div className="hidden flex-col justify-between bg-black/40 p-10 md:flex">
-          <div>
-            <Link href="/" className="text-3xl font-extrabold tracking-wide">
-              Iron <span className="text-[#45ffca]">Fitness</span>
-            </Link>
-            <p className="mt-8 max-w-sm text-sm text-zinc-300">
-              Recover access quickly with a one-time code sent to your registered email.
-            </p>
-          </div>
-          <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Secure Account Recovery.</p>
+    <AuthShell
+      title="Reset Password"
+      subtitle="Request a one-time code, verify it, and set a fresh password securely."
+      badge="Account recovery"
+      imageSrc="/Images/image2.jpg"
+      imageAlt="Gym workout equipment"
+    >
+      <form onSubmit={otpSent ? onResetPassword : onRequestOtp} className="space-y-5">
+        <div>
+          <label className={labelClass}>Email</label>
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={otpSent}
+            className={inputClass}
+            placeholder="you@example.com"
+          />
         </div>
-        <div className="p-6 sm:p-10">
-          <h1 className="text-3xl font-bold">Forgot Password</h1>
-          <p className="mt-2 text-sm text-zinc-400">Request OTP and set a new password.</p>
 
-          <form onSubmit={otpSent ? onResetPassword : onRequestOtp} className="mt-8 space-y-5">
+        {otpSent ? (
+          <>
             <div>
-              <label className="block text-sm font-medium text-zinc-300">Email</label>
+              <label className={labelClass}>OTP code</label>
               <input
-                type="email"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={otpSent}
-                className="mt-2 w-full rounded-xl border border-[#45ffca]/40 bg-black/40 px-4 py-3 text-sm text-white outline-none transition focus:border-[#45ffca] focus:shadow-[0_0_12px_rgba(69,255,202,0.4)]"
-                placeholder="you@example.com"
+                inputMode="numeric"
+                pattern="[0-9]{6}"
+                maxLength={6}
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                className={inputClass}
+                placeholder="6-digit code"
               />
             </div>
+            <div>
+              <label className={labelClass}>New password</label>
+              <input
+                type="password"
+                required
+                minLength={8}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className={inputClass}
+                placeholder="At least 8 characters"
+              />
+            </div>
+          </>
+        ) : null}
 
-            {otpSent ? (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300">OTP</label>
-                  <input
-                    required
-                    inputMode="numeric"
-                    pattern="[0-9]{6}"
-                    maxLength={6}
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                    className="mt-2 w-full rounded-xl border border-[#45ffca]/40 bg-black/40 px-4 py-3 text-sm text-white outline-none transition focus:border-[#45ffca] focus:shadow-[0_0_12px_rgba(69,255,202,0.4)]"
-                    placeholder="6-digit code"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300">New Password</label>
-                  <input
-                    type="password"
-                    required
-                    minLength={8}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="mt-2 w-full rounded-xl border border-[#45ffca]/40 bg-black/40 px-4 py-3 text-sm text-white outline-none transition focus:border-[#45ffca] focus:shadow-[0_0_12px_rgba(69,255,202,0.4)]"
-                    placeholder="At least 8 characters"
-                  />
-                </div>
-              </>
-            ) : null}
-
-            {message ? <p className="text-sm text-emerald-300">{message}</p> : null}
-            {error ? <p className="text-sm text-red-400">{error}</p> : null}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-xl border border-[#45ffca] bg-[#45ffca] py-3 text-sm font-semibold text-black transition hover:shadow-[0_0_18px_rgba(69,255,202,0.6)] disabled:opacity-60"
-            >
-              {loading ? "Please wait..." : otpSent ? "Reset Password" : "Send OTP"}
-            </button>
-
-            {otpSent ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setOtpSent(false);
-                  setOtp("");
-                  setNewPassword("");
-                  setMessage("");
-                  setError("");
-                }}
-                className="w-full rounded-xl border border-zinc-700 bg-zinc-900 py-3 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500"
-              >
-                Use different email
-              </button>
-            ) : null}
-          </form>
-
-          <p className="mt-6 text-center text-sm text-zinc-400">
-            Remembered your password?{" "}
-            <Link href="/login" className="font-semibold text-[#45ffca] hover:underline">
-              Back to login
-            </Link>
+        {message ? (
+          <p className="rounded-xl border border-emerald-300/45 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200">
+            {message}
           </p>
-        </div>
-      </div>
-    </div>
+        ) : null}
+        {error ? <p className="rounded-xl border border-red-300/45 bg-red-500/10 px-3 py-2 text-sm text-red-200">{error}</p> : null}
+
+        <button type="submit" disabled={loading} className={primaryButtonClass}>
+          {loading ? "Please wait..." : otpSent ? "Reset Password" : "Send OTP"}
+        </button>
+
+        {otpSent ? (
+          <button
+            type="button"
+            onClick={() => {
+              setOtpSent(false);
+              setOtp("");
+              setNewPassword("");
+              setMessage("");
+              setError("");
+            }}
+            className={secondaryButtonClass}
+          >
+            Use different email
+          </button>
+        ) : null}
+      </form>
+
+      <p className="mt-6 text-center text-sm text-slate-400">
+        Remembered your password?{" "}
+        <Link href="/login" className="font-semibold text-cyan-200 transition hover:text-cyan-100">
+          Back to login
+        </Link>
+      </p>
+    </AuthShell>
   );
 }

@@ -7,13 +7,13 @@ export function ThemeToggle() {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  if (!mounted) return <span className="h-9 w-9" />;
+  if (!mounted) return <span className="h-8 w-16" />;
   const isDark = (theme === "system" ? resolvedTheme : theme) === "dark";
   return (
     <button
       type="button"
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-800 shadow-sm hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+      className="rounded-xl border border-cyan-300/55 bg-cyan-300 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-950 transition hover:bg-cyan-200 dark:border-cyan-300/45 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
       aria-label="Toggle theme"
     >
       {isDark ? "Light" : "Dark"}
