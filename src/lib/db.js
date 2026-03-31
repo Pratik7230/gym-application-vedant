@@ -8,6 +8,7 @@ if (!cached) {
 
 export async function connectDB() {
   const uri = process.env.MONGODB_URI;
+  const dbName = process.env.MONGODB_DB_NAME;
   if (!uri) {
     throw new Error("Please define MONGODB_URI in .env");
   }
@@ -16,6 +17,7 @@ export async function connectDB() {
     cached.promise = mongoose
       .connect(uri, {
         bufferCommands: false,
+        ...(dbName ? { dbName } : {}),
         maxPoolSize: 10,
         serverSelectionTimeoutMS: 10_000,
         socketTimeoutMS: 45_000,

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export default function AdminDashboardPage() {
@@ -13,26 +14,81 @@ export default function AdminDashboardPage() {
       .catch((e) => setError(e.message));
   }, []);
 
-  if (error) return <p className="text-red-600">{error}</p>;
-  if (!data) return <p className="text-zinc-600 dark:text-zinc-400">Loading…</p>;
+  if (error) {
+    return (
+      <div className="rounded-2xl border border-red-300/50 bg-red-500/10 px-4 py-3 text-sm text-red-700 dark:text-red-200">
+        {error}
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="space-y-4">
+        <div className="h-40 animate-pulse rounded-3xl bg-slate-300/40 dark:bg-white/10" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="h-28 animate-pulse rounded-2xl bg-slate-300/40 dark:bg-white/10" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const cards = [
+    { label: "Active members", value: Number(data.totalMembers || 0).toLocaleString("en-US") },
+    {
+      label: "Active subscriptions",
+      value: Number(data.activeSubscriptions || 0).toLocaleString("en-US"),
+    },
+    {
+      label: "Total revenue",
+      value: Number(data.totalRevenue || 0).toLocaleString("en-US", {
+        style: "currency",
+        currency: "USD",
+      }),
+    },
+    {
+      label: "Revenue this month",
+      value: Number(data.monthRevenue || 0).toLocaleString("en-US", {
+        style: "currency",
+        currency: "USD",
+      }),
+    },
+  ];
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">Analytics</h1>
+    <div className="animate-lift-in space-y-6">
+      <section className="relative overflow-hidden rounded-3xl border border-white/20">
+        <Image
+          src="/Images/aboutimg.jpg"
+          alt="Gym floor"
+          width={643}
+          height={360}
+          className="h-44 w-full object-cover sm:h-52"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#02070f]/85 via-[#02070f]/55 to-transparent" />
+        <div className="absolute inset-0 p-5 sm:p-7">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200">Admin control center</p>
+          <h1 className="font-display mt-2 text-5xl leading-none text-white sm:text-6xl">Business Pulse</h1>
+          <p className="mt-3 max-w-xl text-sm text-slate-200 sm:text-base">
+            Monitor members, subscriptions, and revenue trends in one place.
+          </p>
+        </div>
+      </section>
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          { label: "Active members", value: data.totalMembers },
-          { label: "Active subscriptions (cached)", value: data.activeSubscriptions },
-          { label: "Total revenue (paid)", value: `$${Number(data.totalRevenue).toFixed(2)}` },
-          { label: "Revenue this month", value: `$${Number(data.monthRevenue).toFixed(2)}` },
-        ].map((c) => (
-          <div
-            key={c.label}
-            className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+        {cards.map((card) => (
+          <article
+            key={card.label}
+            className="rounded-2xl border border-slate-900/10 bg-white/70 p-4 shadow-sm backdrop-blur dark:border-white/15 dark:bg-white/5"
           >
-            <p className="text-sm text-zinc-500">{c.label}</p>
-            <p className="mt-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">{c.value}</p>
-          </div>
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">
+              {card.label}
+            </p>
+            <p className="mt-2 font-display text-5xl leading-none text-slate-900 dark:text-white">{card.value}</p>
+          </article>
         ))}
       </div>
     </div>
