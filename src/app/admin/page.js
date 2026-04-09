@@ -59,20 +59,28 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="animate-lift-in space-y-6">
-      <section className="relative overflow-hidden rounded-3xl border border-white/20">
+      <section className="relative overflow-hidden rounded-3xl border border-slate-200 dark:border-white/20">
         <Image
-          src="/Images/aboutimg.jpg"
-          alt="Gym floor"
+          src="/Images/admin_banner_light_hd.png"
+          alt="Gym floor light"
           width={643}
           height={360}
-          className="h-44 w-full object-cover sm:h-52"
+          className="block h-44 w-full object-cover sm:h-52 dark:hidden"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#02070f]/85 via-[#02070f]/55 to-transparent" />
+        <Image
+          src="/Images/admin_banner_hd.png"
+          alt="Gym floor dark"
+          width={643}
+          height={360}
+          className="hidden h-44 w-full object-cover sm:h-52 dark:block"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-50/95 via-slate-50/70 to-transparent dark:from-[#02070f]/85 dark:via-[#02070f]/55" />
         <div className="absolute inset-0 p-5 sm:p-7">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200">Admin control center</p>
-          <h1 className="font-display mt-2 text-5xl leading-none text-white sm:text-6xl">Business Pulse</h1>
-          <p className="mt-3 max-w-xl text-sm text-slate-200 sm:text-base">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-800 dark:text-cyan-200">Admin control center</p>
+          <h1 className="font-display mt-2 text-5xl leading-none text-slate-900 dark:text-white sm:text-6xl">Business Pulse</h1>
+          <p className="mt-3 max-w-xl text-sm text-slate-600 dark:text-slate-200 sm:text-base">
             Monitor members, subscriptions, and revenue trends in one place.
           </p>
         </div>
@@ -82,7 +90,7 @@ export default function AdminDashboardPage() {
         {cards.map((card) => (
           <article
             key={card.label}
-            className="rounded-2xl border border-slate-900/10 bg-white/70 p-4 shadow-sm backdrop-blur dark:border-white/15 dark:bg-white/5"
+            className="rounded-2xl border border-slate-900/10 bg-slate-50/80 p-4 shadow-sm backdrop-blur dark:border-white/15 dark:bg-white/5"
           >
             <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">
               {card.label}

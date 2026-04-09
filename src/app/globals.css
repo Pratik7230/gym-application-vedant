@@ -3,10 +3,10 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #eef4fa;
-  --foreground: #11213b;
-  --surface: rgba(255, 255, 255, 0.82);
-  --surface-border: rgba(15, 23, 42, 0.12);
+  --background: #f1f5f9;
+  --foreground: #0f172a;
+  --surface: rgba(255, 255, 255, 0.75);
+  --surface-border: rgba(15, 23, 42, 0.08);
 }
 
 .dark {

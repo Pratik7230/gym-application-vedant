@@ -63,7 +63,7 @@ function LoginForm() {
       title="Welcome Back"
       subtitle="Sign in to access memberships, payments, workouts, and attendance in one dashboard."
       badge="Member portal"
-      imageSrc="/Images/aboutimg.jpg"
+      imageSrc="/Images/login_bg_hd.png"
       imageAlt="Modern gym interior"
     >
       <form onSubmit={onSubmit} className="space-y-5">
