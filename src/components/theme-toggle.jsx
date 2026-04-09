@@ -12,8 +12,9 @@ export function ThemeToggle() {
   return (
     <button
       type="button"
+      disabled
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="rounded-xl border border-cyan-300/55 bg-cyan-300 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-950 transition hover:bg-cyan-200 dark:border-cyan-300/45 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+      className="rounded-xl border border-cyan-300/55 bg-cyan-300 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-950 transition opacity-50 cursor-not-allowed dark:border-cyan-300/45 dark:bg-white dark:text-slate-900"
       aria-label="Toggle theme"
     >
       {isDark ? "Light" : "Dark"}
