@@ -77,7 +77,7 @@ export default function SignupPage() {
       title="Create Account"
       subtitle="Register once, verify with OTP, and start managing your fitness journey instantly."
       badge="Quick onboarding"
-      imageSrc="/Images/image4.jpg"
+      imageSrc="/Images/signup_bg_male.png"
       imageAlt="Member training in gym"
     >
       <form onSubmit={otpSent ? onVerifyOtp : onRequestOtp} className="space-y-5">
