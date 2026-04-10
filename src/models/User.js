@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema(
       default: ROLES.CLIENT,
     },
     avatarUrl: { type: String, default: "" },
+    avatarPublicId: { type: String, default: "" },
     trainer: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
     isActive: { type: Boolean, default: true },
     refreshTokenVersion: { type: Number, default: 0 },

@@ -1,8 +1,8 @@
-import { put } from "@vercel/blob";
 import { requireAuth } from "@/lib/auth/session.js";
 import { connectDB } from "@/lib/db.js";
 import User from "@/models/User.js";
 import { jsonError } from "@/lib/errors.js";
+import { uploadImageToCloudinary } from "@/lib/cloudinary.js";
 
 export async function POST(request) {
   try {
@@ -21,22 +21,25 @@ export async function POST(request) {
       return Response.json({ error: "Only images allowed" }, { status: 400 });
     }
 
-    const ext = type.split("/")[1] || "jpg";
-    const pathname = `avatars/${user._id}-${Date.now()}.${ext}`;
-
-    const blob = await put(pathname, file, {
-      access: "public",
-      token: process.env.BLOB_READ_WRITE_TOKEN,
+    const uploaded = await uploadImageToCloudinary(file, {
+      folder: "gym-application/avatars",
+      publicId: String(user._id),
     });
 
     await connectDB();
-    await User.findByIdAndUpdate(user._id, { avatarUrl: blob.url });
+    await User.findByIdAndUpdate(user._id, {
+      avatarUrl: uploaded.url,
+      avatarPublicId: uploaded.publicId,
+    });
 
-    return Response.json({ url: blob.url });
+    return Response.json({ url: uploaded.url });
   } catch (e) {
-    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
       return Response.json(
-        { error: "BLOB_READ_WRITE_TOKEN not configured. Set it for Vercel Blob uploads." },
+        {
+          error:
+            "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.",
+        },
         { status: 503 }
       );
     }
