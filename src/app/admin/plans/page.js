@@ -39,9 +39,20 @@ export default function AdminPlansPage() {
     load();
   }
 
-  async function deactivate(id) {
-    if (!confirm("Deactivate plan?")) return;
-    await fetch(`/api/admin/plans/${id}`, { method: "DELETE", credentials: "include" });
+  async function togglePlanStatus(plan) {
+    const nextStatus = !plan.isActive;
+    const action = nextStatus ? "Activate" : "Deactivate";
+    if (!confirm(`${action} plan?`)) return;
+
+    setError("");
+    const res = await fetch(`/api/admin/plans/${plan._id}`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isActive: nextStatus }),
+    });
+    const data = await res.json();
+    if (!res.ok) return setError(data.error || "Failed");
     load();
   }
 
@@ -125,8 +136,12 @@ export default function AdminPlansPage() {
                 </td>
                 <td className="px-3 py-2">{p.isActive ? "yes" : "no"}</td>
                 <td className="px-3 py-2">
-                  <button type="button" onClick={() => deactivate(p._id)} className="text-red-600">
-                    Deactivate
+                  <button
+                    type="button"
+                    onClick={() => togglePlanStatus(p)}
+                    className={p.isActive ? "text-red-600" : "text-emerald-600"}
+                  >
+                    {p.isActive ? "Deactivate" : "Activate"}
                   </button>
                 </td>
               </tr>
