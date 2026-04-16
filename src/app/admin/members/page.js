@@ -86,6 +86,21 @@ export default function AdminMembersPage() {
     load();
   }
 
+  async function updateRole(userId, nextRole) {
+    setError("");
+    const res = await fetch(`/api/admin/users/${userId}`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role: nextRole }),
+    });
+    if (!res.ok) {
+      const d = await res.json();
+      return setError(d.error || "Failed");
+    }
+    load();
+  }
+
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">Members</h1>
@@ -193,7 +208,17 @@ export default function AdminMembersPage() {
               <tr key={u._id} className="border-t border-zinc-200 dark:border-zinc-700">
                 <td className="px-3 py-2">{u.name}</td>
                 <td className="px-3 py-2">{u.email}</td>
-                <td className="px-3 py-2">{u.role}</td>
+                <td className="px-3 py-2">
+                  <select
+                    value={u.role}
+                    onChange={(e) => updateRole(u._id, e.target.value)}
+                    className="rounded border border-zinc-300 px-2 py-1 text-xs dark:border-zinc-600 dark:bg-zinc-950"
+                  >
+                    <option value="client">client</option>
+                    <option value="trainer">trainer</option>
+                    <option value="admin">admin</option>
+                  </select>
+                </td>
                 <td className="px-3 py-2">
                   {u.role === "client" ? (
                     <select
