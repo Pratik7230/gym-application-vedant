@@ -2,11 +2,32 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+function loadRazorpayCheckoutScript() {
+  return new Promise((resolve, reject) => {
+    if (typeof window === "undefined") {
+      reject(new Error("Payment checkout is only available in browser"));
+      return;
+    }
+    if (window.Razorpay) {
+      resolve();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Unable to load Razorpay checkout"));
+    document.body.appendChild(script);
+  });
+}
+
 export default function AdminPaymentsPage() {
   const [items, setItems] = useState([]);
   const [clients, setClients] = useState([]);
   const [subs, setSubs] = useState([]);
   const [error, setError] = useState("");
+  const [isRazorpayLoading, setIsRazorpayLoading] = useState(false);
   const [q, setQ] = useState("");
   const [form, setForm] = useState({
     userId: "",
@@ -57,6 +78,94 @@ export default function AdminPaymentsPage() {
     if (!res.ok) return setError(data.error || "Failed");
     setForm({ userId: "", subscriptionId: "", amount: 0, status: "paid", note: "" });
     load();
+  }
+
+  async function startRazorpayPayment() {
+    setError("");
+    if (!form.userId) {
+      setError("Please select a client");
+      return;
+    }
+    const amount = Number(form.amount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setError("Please enter a valid amount greater than 0");
+      return;
+    }
+
+    setIsRazorpayLoading(true);
+    try {
+      await loadRazorpayCheckoutScript();
+
+      const orderRes = await fetch("/api/admin/payments/razorpay/order", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: form.userId,
+          subscriptionId: form.subscriptionId || null,
+          amount,
+          note: form.note,
+        }),
+      });
+      const orderData = await orderRes.json();
+      if (!orderRes.ok) {
+        throw new Error(orderData.error || "Failed to create payment order");
+      }
+
+      const checkout = new window.Razorpay({
+        key: orderData.keyId,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        order_id: orderData.orderId,
+        name: "Iron Fitness",
+        description: "Membership payment",
+        prefill: {
+          name: orderData.customer?.name || "",
+          email: orderData.customer?.email || "",
+          contact: orderData.customer?.phone || "",
+        },
+        handler: async (response) => {
+          try {
+            const verifyRes = await fetch("/api/admin/payments/razorpay/verify", {
+              method: "POST",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                userId: form.userId,
+                subscriptionId: form.subscriptionId || null,
+                amount,
+                currency: orderData.currency,
+                note: form.note,
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+              }),
+            });
+            const verifyData = await verifyRes.json();
+            if (!verifyRes.ok) throw new Error(verifyData.error || "Payment verification failed");
+
+            setForm({ userId: "", subscriptionId: "", amount: 0, status: "paid", note: "" });
+            await load();
+          } catch (e) {
+            setError(e.message || "Payment verification failed");
+          }
+        },
+        modal: {
+          ondismiss: () => setError("Payment cancelled"),
+        },
+      });
+
+      checkout.on("payment.failed", (response) => {
+        const message = response?.error?.description || "Payment failed";
+        setError(message);
+      });
+
+      checkout.open();
+    } catch (e) {
+      setError(e.message || "Unable to start Razorpay payment");
+    } finally {
+      setIsRazorpayLoading(false);
+    }
   }
 
   return (
@@ -121,6 +230,14 @@ export default function AdminPaymentsPage() {
             className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
           >
             Save
+          </button>
+          <button
+            type="button"
+            onClick={startRazorpayPayment}
+            disabled={isRazorpayLoading}
+            className="rounded-lg border border-cyan-300 bg-cyan-50 px-4 py-2 text-sm font-medium text-cyan-900 disabled:cursor-not-allowed disabled:opacity-60 dark:border-cyan-800 dark:bg-cyan-950/40 dark:text-cyan-200"
+          >
+            {isRazorpayLoading ? "Starting..." : "Pay with Razorpay"}
           </button>
         </div>
       </form>
