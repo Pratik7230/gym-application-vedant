@@ -6,6 +6,7 @@ const nav = [
   { href: "/admin/plans", label: "Plans" },
   { href: "/admin/subscriptions", label: "Subscriptions" },
   { href: "/admin/payments", label: "Payments" },
+  { href: "/admin/videos", label: "Videos" },
   { href: "/admin/attendance", label: "Attendance" },
   { href: "/admin/logs", label: "Activity logs" },
   { href: "/admin/export", label: "Export CSV" },

@@ -48,3 +48,13 @@ export const attendanceManualSchema = z.object({
   userId: z.string().min(1),
   date: z.coerce.date(),
 });
+
+export const videoTutorialCreateSchema = z.object({
+  title: z.string().min(1).max(140),
+  youtubeUrl: z.string().url(),
+  description: z.string().max(500).optional(),
+  sortOrder: z.number().int().min(0).optional(),
+  isActive: z.boolean().optional(),
+});
+
+export const videoTutorialUpdateSchema = videoTutorialCreateSchema.partial();

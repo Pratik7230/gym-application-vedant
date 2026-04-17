@@ -9,6 +9,7 @@ export default function ClientHome() {
   const [sub, setSub] = useState(null);
   const [banner, setBanner] = useState("");
   const [loadError, setLoadError] = useState("");
+  const [videos, setVideos] = useState([]);
 
   useEffect(() => {
     apiJson("/api/client/subscription")
@@ -19,6 +20,33 @@ export default function ClientHome() {
           setBanner(`Your subscription expires in ${d.remainingDays} day(s).`);
       })
       .catch(() => setLoadError("Could not load subscription."));
+  }, []);
+
+  useEffect(() => {
+    apiJson("/api/client/video-tutorials", { redirectOn401: false })
+      .then((d) => setVideos(d.items || []))
+      .catch(() => {
+        setVideos([
+          {
+            _id: "default-1",
+            title: "Full Body Beginner Workout",
+            description: "Follow this guided beginner routine.",
+            youtubeId: "EKUNGQ4LmH8",
+          },
+          {
+            _id: "default-2",
+            title: "Quick Shorts Routine",
+            description: "Short and effective movement drill.",
+            youtubeId: "c-lBErfxszs",
+          },
+          {
+            _id: "default-3",
+            title: "Strength Training Session",
+            description: "Build consistency with this session.",
+            youtubeId: "eGo4IYlbE5g",
+          },
+        ]);
+      });
   }, []);
 
   const status = sub?.status || "not_started";
@@ -107,6 +135,36 @@ export default function ClientHome() {
           </Link>
         ))}
       </div>
+
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Video Tutorials</h2>
+          <p className="text-xs uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">Training library</p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {videos.map((video) => (
+            <article
+              key={video._id}
+              className="overflow-hidden rounded-2xl border border-slate-900/10 bg-white/75 p-3 shadow-sm backdrop-blur dark:border-white/15 dark:bg-white/5"
+            >
+              <div className="relative aspect-video overflow-hidden rounded-xl border border-slate-200 dark:border-white/20">
+                <iframe
+                  title={video.title}
+                  src={`https://www.youtube.com/embed/${video.youtubeId}`}
+                  className="h-full w-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                />
+              </div>
+              <h3 className="mt-3 text-base font-semibold text-slate-900 dark:text-slate-100">{video.title}</h3>
+              {video.description ? (
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{video.description}</p>
+              ) : null}
+            </article>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
