@@ -44,6 +44,25 @@ export const paymentCreateSchema = z.object({
   paidAt: z.coerce.date().optional(),
 });
 
+export const razorpayOrderCreateSchema = z.object({
+  userId: z.string().min(1),
+  subscriptionId: z.string().optional().nullable(),
+  amount: z.number().positive(),
+  currency: z.string().optional(),
+  note: z.string().optional(),
+});
+
+export const razorpayVerifySchema = z.object({
+  userId: z.string().min(1),
+  subscriptionId: z.string().optional().nullable(),
+  amount: z.number().positive(),
+  currency: z.string().optional(),
+  note: z.string().optional(),
+  razorpayOrderId: z.string().min(1),
+  razorpayPaymentId: z.string().min(1),
+  razorpaySignature: z.string().min(1),
+});
+
 export const attendanceManualSchema = z.object({
   userId: z.string().min(1),
   date: z.coerce.date(),
