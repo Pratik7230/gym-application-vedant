@@ -10,6 +10,7 @@ import Plan from "@/models/Plan.js";
 import Subscription from "@/models/Subscription.js";
 import { logActivity } from "@/services/activityLogService.js";
 import { createSubscription } from "@/services/subscriptionService.js";
+import { sendSubscriptionReceiptEmail } from "@/services/emailService.js";
 import { clientSubscriptionRazorpayVerifySchema } from "@/validators/client.js";
 
 export const runtime = "nodejs";
@@ -141,6 +142,28 @@ export async function POST(request) {
       .lean();
 
     const fullSubscription = await Subscription.findById(sub._id).populate("plan").lean();
+
+    if (user.email) {
+      try {
+        await sendSubscriptionReceiptEmail({
+          to: user.email,
+          name: user.name || "Member",
+          planName: plan.name,
+          amount: pay.amount,
+          currency: pay.currency,
+          startDate: fullSubscription.startDate,
+          endDate: fullSubscription.endDate,
+          providerPaymentId: pay.providerPaymentId,
+          providerOrderId: pay.providerOrderId,
+        });
+      } catch (emailError) {
+        console.error("[email] subscription receipt send failed", {
+          userId: String(user._id),
+          paymentId: pay.providerPaymentId,
+          error: emailError?.message || emailError,
+        });
+      }
+    }
 
     return Response.json({ payment: fullPayment, subscription: fullSubscription }, { status: 201 });
   } catch (e) {
